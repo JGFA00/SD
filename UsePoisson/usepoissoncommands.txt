@@ -1,0 +1,16 @@
+# no directório onde compilas o programa UsePoisson.java
+# make sure the poisson/src is adjusted to your settings
+
+$ javac -cp poisson/src/ UsePoisson.java
+
+# to run the program you must provide the classpath with the current
+# directory to find UsePoisson and also the path to the poisson package
+# since it is poisson/src/poisson and package is poisson => poisson/src
+
+$ java -cp .:poisson/src UsePoisson 10
+
+# this gets you a sequence of events with an average of 10 per minute
+# a similar code must be inserted in your calculatormulti code to trigger
+# the calls from the client to the server
+
+

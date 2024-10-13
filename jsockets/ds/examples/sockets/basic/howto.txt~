@@ -1,0 +1,27 @@
+1) “download” basic.zip
+
+2) unzip basic.zip
+
+3) cat basic/Client.java  // “notice the package location”
+
+4) mkdir ds/
+
+4) mkdir ds/examples/
+
+4) mkdir ds/examples/sockets/
+
+4) mkdir ds/examples/sockets/basic
+
+5) mv basic/* ds/examples/sockets/basic
+
+6) javac ds/examples/sockets/basic/*.java
+
+7) “abrir novo tab na shell”
+
+tab original: 
+
+8) java ds.examples.sockets.basic.Server localhost
+
+tab novo:
+
+9) java ds.examples.sockets.basic.Client localhost “port number given by server”

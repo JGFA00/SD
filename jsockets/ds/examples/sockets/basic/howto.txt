@@ -1,0 +1,11 @@
+1) javac ds/examples/sockets/basic/*.java
+
+2) “abrir novo tab na shell”
+
+tab original: 
+
+3) java ds.examples.sockets.basic.Server localhost
+
+tab novo:
+
+4) java ds.examples.sockets.basic.Client localhost “port number given by server”
