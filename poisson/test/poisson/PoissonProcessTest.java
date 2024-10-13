@@ -14,12 +14,12 @@ public class PoissonProcessTest {
     }
 
     private static void testArrivalTimes(double lambda) {
-        PoissonProcess pp = new PoissonProcess(lambda, new Random(0) );
-	SampleValues s = new SampleValues("Arrival Times / " + lambda);
-	double t = 0d;
-	for (int i = 1; i <= SAMPLES; i++) {
-	    t += pp.timeForNextEvent();
-	    System.out.println("next event at -> " + t*60.0);
-	}
+    	PoissonProcess pp = new PoissonProcess(lambda, new Random(0) );
+		SampleValues s = new SampleValues("Arrival Times / " + lambda);
+		double t = 0d;
+		for (int i = 1; i <= SAMPLES; i++) {
+	   	 t += pp.timeForNextEvent();
+	    	System.out.println("next event at -> " + t*60.0);
+		}
     }
 }
