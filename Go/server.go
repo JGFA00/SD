@@ -14,6 +14,7 @@ func handleConnection(conn net.Conn) {
     fmt.Printf("New connection from %s\n", conn.RemoteAddr().String())
 
     scanner := bufio.NewScanner(conn)
+    writer := bufio.NewWriter(conn) // Buffered writer for the connection
     for scanner.Scan() {
         command := scanner.Text()
         fmt.Printf("Received command: %s\n", command)
@@ -21,7 +22,8 @@ func handleConnection(conn net.Conn) {
         // Process command
         parts := strings.Fields(command) // Split by whitespace
         if len(parts) != 3 {
-            fmt.Fprintf(conn, "Invalid format. Use <operation> <x> <y>\n")
+            writer.WriteString("Invalid format. Use <operation> <x> <y>\n")
+            writer.Flush()
             continue
         }
 
@@ -30,7 +32,8 @@ func handleConnection(conn net.Conn) {
         y, err2 := strconv.ParseFloat(parts[2], 64)
 
         if err1 != nil || err2 != nil {
-            fmt.Fprintf(conn, "Invalid numbers provided.\n")
+            writer.WriteString("Invalid numbers provided.\n")
+            writer.Flush()
             continue
         }
 
@@ -58,7 +61,12 @@ func handleConnection(conn net.Conn) {
         }
 
         // Send result back to client
-        fmt.Fprintf(conn, resultMsg)
+        writer.WriteString(resultMsg)
+        writer.Flush() // Ensure the response is sent immediately
+    }
+
+    if err := scanner.Err(); err != nil {
+        fmt.Printf("Connection error: %v\n", err)
     }
 }
 

@@ -100,7 +100,6 @@ func (p *Peer) handleToken(token Token) {
     if len(p.localQueue) > 0 {
         // Process each request in the queue
         for _, req := range p.localQueue {
-            log.Printf("Processing request: %s", req)
             // Send request to the server or handle it locally as needed
             p.sendMessageToServer(req)
         }
@@ -112,19 +111,36 @@ func (p *Peer) handleToken(token Token) {
     p.forwardToken()
 }
 
-// forwardToken forwards the token to the next peer in the ring
+// forwardToken forwards the token to the next peer in the ring.
+// If it fails to connect to the next peer, it retries and processes local requests.
 func (p *Peer) forwardToken() {
     token := Token{HolderID: p.Host, Timestamp: time.Now().Unix()}
-    conn, err := net.Dial("tcp", p.RemoteAddr)
-    if err != nil {
-        log.Printf("Failed to connect to next peer: %v", err)
-        return
-    }
-    defer conn.Close()
+    retryLimit := 5           // Maximum number of retries
+    retryInterval := 5 * time.Second // Interval between retries
 
-    // Include token information in the message or log it for better tracking
-    fmt.Fprintf(conn, "TOKEN\n")
-    log.Printf("Token (HolderID: %s) forwarded to %s", token.HolderID, p.RemoteAddr)
+    for retries := 0; retries < retryLimit; retries++ {
+        conn, err := net.Dial("tcp", p.RemoteAddr)
+        if err != nil {
+            log.Printf("Failed to connect to next peer (%s): %v", p.RemoteAddr, err)
+
+            // Process local requests while retrying
+            p.processLocalQueue()
+
+            // Wait before retrying
+            time.Sleep(retryInterval)
+            continue
+        }
+        defer conn.Close()
+
+        // Send the token to the next peer
+        fmt.Fprintf(conn, "TOKEN\n")
+        log.Printf("Token (HolderID: %s) forwarded to %s", token.HolderID, p.RemoteAddr)
+        return // Token successfully forwarded
+    }
+
+    // If all retries fail, process the queue locally as fallback
+    log.Printf("Max retries reached. Processing requests locally.")
+    p.processLocalQueue()
 }
 
 // SendMessage sends a message to the remote peer
@@ -187,7 +203,7 @@ func atoi(s string) int {
 
 // sendMessageToServer sends a message to the server for processing
 func (p *Peer) sendMessageToServer(message string) {
-    // Replace with the actual server address
+        // Replace with the actual server address
     serverAddr := "localhost:8080" // Ensure this is the actual server address
     conn, err := net.Dial("tcp", serverAddr)
     if err != nil {
@@ -196,9 +212,37 @@ func (p *Peer) sendMessageToServer(message string) {
     }
     defer conn.Close()
 
+    // Send the message
     fmt.Fprintf(conn, "%s\n", message)
     log.Printf("Sent message to server: %s", message)
+
+    // Read the server's response
+    scanner := bufio.NewScanner(conn)
+    if scanner.Scan() {
+        response := scanner.Text()
+        log.Printf("Received response from server: %s", response)
+    } else if err := scanner.Err(); err != nil {
+        log.Printf("Error reading response from server: %v", err)
+    }
 }
+
+
+
+// processLocalQueue processes requests in the local queue by sending them to the server.
+func (p *Peer) processLocalQueue() {
+    p.mu.Lock()
+    defer p.mu.Unlock()
+
+    for len(p.localQueue) > 0 {
+        // Retrieve the next request from the queue
+        request := p.localQueue[0]
+        p.localQueue = p.localQueue[1:] // Remove the request from the queue
+
+        log.Printf("Processing request locally: %s", request)
+        p.sendMessageToServer(request)
+    }
+}
+
 
 // main function initializes the peer and periodically sends random messages to the remote peer
 func main() {
@@ -226,7 +270,6 @@ func main() {
     // Continuously generate random operations based on Poisson intervals and add to queue
     for {
         message := RandomOperation()
-        log.Printf("Generating message: %s", message)
         peer.QueueMessage(message)
 
         // Wait for the next event based on Poisson process interval
