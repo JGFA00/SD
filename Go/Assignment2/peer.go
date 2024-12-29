@@ -119,7 +119,15 @@ func (p *Peer) cleanupNeighbors() {
     }
 }
 
-// main function initializes the peer and starts the server and anti-entropy process
+// Helper function to convert string to int with error handling
+func atoi(s string) int {
+    i, err := strconv.Atoi(s)
+    if err != nil {
+        log.Fatalf("Invalid port: %v", err)
+    }
+    return i
+}
+
 func main() {
     if len(os.Args) < 2 {
         log.Fatalf("Usage: go run peer.go <host:port> [<host:port>...]")
@@ -147,22 +155,14 @@ func main() {
     go peer.StartServer()
     go peer.cleanupNeighbors()
 
-    ticker := time.NewTicker(30 * time.Second) // Dissemination interval
-    defer ticker.Stop()
+    pp := NewPoissonProcess(0.0333, time.Now().UnixNano()) // Poisson process 2 times per minute
 
     for {
-        <-ticker.C
+        time.Sleep(time.Duration(pp.TimeForNextEvent()) * time.Second) // Wait based on Poisson interval
         peer.disseminateNeighbors()
         log.Printf("Disseminated neighbors. Current map size: %d", len(peer.Neighbors))
     }
 }
 
 
-// Helper function to convert string to int with error handling
-func atoi(s string) int {
-    i, err := strconv.Atoi(s)
-    if err != nil {
-        log.Fatalf("Invalid port: %v", err)
-    }
-    return i
-}
+
