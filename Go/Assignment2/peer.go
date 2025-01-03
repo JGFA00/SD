@@ -155,7 +155,7 @@ func main() {
     go peer.StartServer()
     go peer.cleanupNeighbors()
 
-    pp := NewPoissonProcess(0.0333, time.Now().UnixNano()) // Poisson process 2 times per minute
+    pp := NewPoissonProcess(2, time.Now().UnixNano()) // Poisson process 2 times per minute
 
     for {
         time.Sleep(time.Duration(pp.TimeForNextEvent()) * time.Second) // Wait based on Poisson interval
@@ -166,3 +166,10 @@ func main() {
 
 
 
+
+PEERS["p1"]="localhost:8081 localhost:8082"    # p1 connects to p2
+PEERS["p2"]="localhost:8082 localhost:8081 localhost:8083 localhost:8084" # p2 connects to p1, p3, p4
+PEERS["p3"]="localhost:8083 localhost:8082"    # p3 connects to p2
+PEERS["p4"]="localhost:8084 localhost:8082 localhost:8085 localhost:8086" # p4 connects to p2, p5, p6
+PEERS["p5"]="localhost:8085 localhost:8084"    # p5 connects to p4
+PEERS["p6"]="localhost:8086 localhost:8084"   

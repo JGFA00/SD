@@ -1,0 +1,6 @@
+p1 localhost:8081 localhost:8082 localhost:8083 localhost:8084 localhost:8085 localhost:8086
+p2 localhost:8082 localhost:8081 localhost:8083 localhost:8084 localhost:8085 localhost:8086
+p3 localhost:8083 localhost:8081 localhost:8082 localhost:8084 localhost:8085 localhost:8086
+p4 localhost:8084 localhost:8081 localhost:8082 localhost:8083 localhost:8085 localhost:8086
+p5 localhost:8085 localhost:8081 localhost:8082 localhost:8083 localhost:8084 localhost:8086
+p6 localhost:8086 localhost:8081 localhost:8082 localhost:8083 localhost:8084 localhost:8085
