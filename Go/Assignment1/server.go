@@ -14,13 +14,12 @@ func handleConnection(conn net.Conn) {
     fmt.Printf("New connection from %s\n", conn.RemoteAddr().String())
 
     scanner := bufio.NewScanner(conn)
-    writer := bufio.NewWriter(conn) // Buffered writer for the connection
+    writer := bufio.NewWriter(conn)
     for scanner.Scan() {
         command := scanner.Text()
         fmt.Printf("Received command: %s\n", command)
 
-        // Process command
-        parts := strings.Fields(command) // Split by whitespace
+        parts := strings.Fields(command)
         if len(parts) != 3 {
             writer.WriteString("Invalid format. Use <operation> <x> <y>\n")
             writer.Flush()
@@ -60,9 +59,8 @@ func handleConnection(conn net.Conn) {
             resultMsg = "Invalid operation. Supported operations: add, sub, mul, div\n"
         }
 
-        // Send result back to client
         writer.WriteString(resultMsg)
-        writer.Flush() // Ensure the response is sent immediately
+        writer.Flush()
     }
 
     if err := scanner.Err(); err != nil {
@@ -85,6 +83,6 @@ func main() {
             fmt.Println("Error accepting connection:", err)
             continue
         }
-        go handleConnection(conn) // Handle each connection concurrently
+        go handleConnection(conn)
     }
 }
